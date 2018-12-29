@@ -1,0 +1,128 @@
+# version format
+version: 1.1.{build}
+
+# you can use {branch} name in version format too
+# version: 1.0.{build}-{branch}
+
+# branches to build
+branches:
+  # whitelist
+  only:
+    - master
+# Do not build on tags (GitHub and BitBucket)
+skip_tags: true
+
+# Do not build feature branch with open Pull Requests
+skip_branch_with_pr: true
+
+# Build worker image (VM template)
+image: Visual Studio 2017
+
+# scripts that are called at very beginning, before repo cloning
+init:
+  - git config --global core.autocrlf input
+
+# set clone depth
+clone_depth: 1
+
+nuget:
+  account_feed: true
+  project_feed: true
+  disable_publish_on_pr: true     # disable publishing of .nupkg artifacts to
+                                  # account/project feeds for pull request builds
+
+
+#---------------------------------#
+#       build configuration       #
+#---------------------------------#
+
+# build platform, i.e. x86, x64, Any CPU. This setting is optional.
+platform: Any CPU     
+       
+# build Configuration, i.e. Debug, Release, etc.
+configuration: Release
+
+dotnet_csproj:
+  patch: true
+  file: '**\*.csproj;**\*.props;'
+  version: '{version}'
+  package_version: '{version}'
+  assembly_version: '{version}'
+  file_version: '{version}'
+  informational_version: '{version}'
+
+# Build settings, not to be confused with "before_build" and "after_build".
+# "project" is relative to the original build directory and not influenced by directory changes in "before_build".
+build:
+  parallel: true                  
+  project: 'src\Docker\Docker.csproj'
+  publish_nuget: true             # package projects with .nuspec files and push to artifacts
+  publish_nuget_symbols: true     # generate and publish NuGet symbol packages
+
+# scripts to run before build
+before_build:
+  - nuget restore
+
+# to run your custom scripts instead of automatic MSBuild
+build_script:
+
+# scripts to run after build (working directory and environment changes are persisted from the previous steps)
+after_build:
+
+# scripts to run *after* solution is built and *before* automatic packaging occurs (web apps, NuGet packages, Azure Cloud Services)
+before_package:
+
+
+#---------------------------------#
+#     deployment configuration    #
+#---------------------------------#
+
+# providers: Local, FTP, WebDeploy, AzureCS, AzureBlob, S3, NuGet, Environment
+# provider names are case-sensitive!
+deploy:
+  provider: NuGet
+  server: https://www.myget.org/F/esencia-core/api/v2/package
+  api_key:
+    secure: ns8R8LmCdw52vxFRDym9aRzAwDHMdzciSur6ce0Svr6Y53smU8ciOkY90oh9FzZA
+  skip_symbols: true
+  artifact: /.*\.nupkg/
+
+
+# scripts to run before deployment
+before_deploy:
+
+# scripts to run after deployment
+after_deploy:
+
+# to run your custom scripts instead of provider deployments
+deploy_script:
+
+
+#---------------------------------#
+#        global handlers          #
+#---------------------------------#
+
+# on successful build
+on_success:
+
+# on build failure
+on_failure:
+
+# after build failure or success
+on_finish:
+
+
+#---------------------------------#
+#         notifications           #
+#---------------------------------#
+
+notifications:
+
+  # Email
+  - provider: Email
+    to:
+      - ryan@esenciadev.com
+    subject: 'Build {{status}}'                  # optional
+    message: "{{message}}, {{commitId}}, ..."    # optional
+    on_build_status_changed: true
+
