@@ -13,7 +13,7 @@ public static IWebHostBuilder CreateWebHostBuilder(string[] args)
     WebHost.CreateDefaultBuilder(args)
            .AddDockerSecrets(false)
            .UseStartup<Startup>();
-\}   
+}   
 ```
 
 If you only want to use Docker secrets in production, so that you can debug locally, call `.AddDockerSecretsExceptInDevelopment()` instead. 
